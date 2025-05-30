@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Focus Mate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100%;
+      background: linear-gradient(135deg, #8ec5fc, #e0c3fc);
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    .main-heading {
+      font-size: 48px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 40px;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .button-row {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+      max-width: 1000px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    @media (min-width: 700px) {
+      .button-row {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+    }
+
+    .big-button {
+      flex: 1 1 40%;
+      height: 250px;
+      width: 80%;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      background: rgba(255, 255, 255, 0.5);
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .big-button:hover {
+      background: rgba(255, 255, 255, 0.7);
+      transform: scale(1.03);
+    }
+
+    .subheading {
+      font-size: 14px;
+      font-weight: normal;
+      color: #555;
+    }
+
+    .back-button {
+      margin-top: 30px;
+      padding: 14px 28px;
+      font-size: 16px;
+      background: white;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #settingsButtons {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+      max-width: 900px;
+      align-items: center;
+    }
+
+    @media (min-width: 700px) {
+      #settingsButtons {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+    }
+
+    .settings-button {
+      flex: 1;
+      height: 220px;
+      width: 80%;
+      background: rgba(255, 255, 255, 0.5);
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      font-weight: bold;
+      font-size: 24px;
+      color: #333;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .settings-button:hover {
+      background: rgba(255, 255, 255, 0.7);
+      transform: scale(1.03);
+    }
+
+    .settings-icon {
+      font-size: 48px;
+      user-select: none;
+    }
+
+    .settings-subheading {
+      font-size: 14px;
+      color: #555;
+      font-weight: normal;
+      max-width: 80%;
+    }
+
+    #analyticsOutput {
+      background: #fff;
+      color: #333;
+      padding: 20px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      width: 100%;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+
+    #focusScreen {
+      background: linear-gradient(135deg, #8ec5fc, #e0c3fc);
+      color: white;
+      text-align: center;
+    }
+
+    #focusTimer {
+      font-size: 40px;
+      margin-bottom: 30px;
+      font-family: monospace;
+    }
+
+    #chartsContainer {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 1100px;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    canvas.chart-canvas {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+      width: 350px !important;
+      height: 280px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Home Screen -->
+  <div id="homeScreen" class="screen active">
+    <div class="main-heading">Focus Mate</div>
+    <div class="button-row">
+      <button class="big-button" onclick="switchScreen('analyticsScreen')">
+        📊<br>Analytics
+        <div class="subheading">Track Analyze Improve</div>
+      </button>
+      <button class="big-button" onclick="switchScreen('settingsScreen')">
+        ⚙️<br>Settings
+        <div class="subheading">Erase or download data</div>
+      </button>
+      <button class="big-button" onclick="switchScreen('focusScreen')">
+        🔴<br>Focus Mode
+        <div class="subheading">Your smart partner to stay focused and beat distractions</div>
+      </button>
+      <a href="DistractionCheck.html" class="big-button">
+        🧠<br>Distraction Check
+        <div class="subheading">AI Camera Detection</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Analytics Screen -->
+  <div id="analyticsScreen" class="screen" style="flex-direction: column; align-items: center;">
+    <h1 style="color:white; margin-bottom: 30px;">Analytics</h1>
+    <div id="chartsContainer">
+      <canvas id="focusChart" class="chart-canvas"></canvas>
+      <canvas id="clickChart" class="chart-canvas"></canvas>
+      <canvas id="tabChart" class="chart-canvas"></canvas>
+    </div>
+    <button class="back-button" onclick="switchScreen('homeScreen')">Back</button>
+  </div>
+
+  <!-- Settings Screen -->
+  <div id="settingsScreen" class="screen">
+    <h1 style="color:white; margin-bottom: 40px;">Settings</h1>
+    <div id="settingsButtons">
+      <button class="settings-button" id="downloadBtn" onclick="downloadLog()">
+        <div class="settings-icon">⬇️</div>
+        Download Data
+        <div class="settings-subheading">Save your focus analytics log to your device.</div>
+      </button>
+      <button class="settings-button" id="clearBtn" onclick="clearLog()">
+        <div class="settings-icon">🗑️</div>
+        Erase Data
+        <div class="settings-subheading">Clear all stored focus analytics logs.</div>
+      </button>
+    </div>
+    <button class="back-button" onclick="switchScreen('homeScreen')">Back</button>
+  </div>
+
+  <!-- Focus Mode Screen -->
+  <div id="focusScreen" class="screen">
+    <h1 style="font-size: 48px; margin-bottom: 10px;">STAY FOCUS</h1>
+    <p style="font-size: 20px; margin-bottom: 30px;">Avoid distractions and crush your goals!</p>
+    
+    <!-- Start Button Added -->
+    <button class="back-button" onclick="startFocusTimer()" style="margin-bottom: 20px;">Start</button>
+    
+    <div id="focusTimer">00:00:00:000</div>
+    <button class="back-button" onclick="exitFocusMode()">Back</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    let log = "Monitoring started...\n";
+    let focusStartTime = Date.now();
+    let blurStartTime = null;
+    let focusTimerAnimationFrame;
+    let timerStart;
+
+    let focusDurations = [];
+    let clickCount = 0;
+    let tabSwitchCount = 0;
+
+    let focusChartInstance, clickChartInstance, tabChartInstance;
+
+    function addLogEntry(entry) {
+      const timestamp = new Date().toLocaleString();
+      log += `[${timestamp}] ${entry}\n`;
+    }
+
+    function formatDuration(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return mins > 0
+        ? `${mins} minute${mins !== 1 ? "s" : ""} ${secs} second${secs !== 1 ? "s" : ""}`
+        : `${secs} second${secs !== 1 ? "s" : ""}`;
+    }
+
+    window.addEventListener("blur", () => {
+      const now = Date.now();
+      const focusedDuration = Math.floor((now - focusStartTime) / 1000);
+      addLogEntry(`User left the tab or minimized the window. Focus time: ${formatDuration(focusedDuration)}.`);
+
+      if (focusedDuration > 0) {
+        focusDurations.push(focusedDuration);
+      }
+
+      blurStartTime = now;
+      tabSwitchCount++;
+      renderCharts();
+    });
+
+    window.addEventListener("focus", () => {
+      const now = Date.now();
+      if (blurStartTime) {
+        const awayDuration = Math.floor((now - blurStartTime) / 1000);
+        addLogEntry(`User returned to the tab. Stayed away for ${formatDuration(awayDuration)}.`);
+      } else {
+        addLogEntry("User returned to the tab.");
+      }
+      focusStartTime = now;
+      renderCharts();
+    });
+
+    window.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      addLogEntry("Right-click detected.");
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      const now = Date.now();
+      const focusedDuration = Math.floor((now - focusStartTime) / 1000);
+      addLogEntry(`User attempted to leave or refresh the page. Last focus duration: ${formatDuration(focusedDuration)}.`);
+      e.returnValue = '';
+    });
+
+    window.addEventListener("click", () => {
+      clickCount++;
+      renderCharts();
+    });
+
+    function switchScreen(screenId) {
+      document.querySelectorAll(".screen").forEach(screen => screen.classList.remove("active"));
+      document.getElementById(screenId).classList.add("active");
+
+      if (screenId === "analyticsScreen") {
+        renderCharts();
+      }
+
+      if (screenId !== "focusScreen") {
+        cancelAnimationFrame(focusTimerAnimationFrame);
+      }
+    }
+
+    function startFocusTimer() {
+      const timerElement = document.getElementById("focusTimer");
+      timerStart = performance.now();
+
+      function update() {
+        const elapsed = performance.now() - timerStart;
+        const totalMilliseconds = Math.floor(elapsed);
+        const ms = String(totalMilliseconds % 1000).padStart(3, '0');
+        const totalSeconds = Math.floor(totalMilliseconds / 1000);
+        const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(totalSeconds % 60).padStart(2, '0');
+
+        timerElement.textContent = `${hrs}:${mins}:${secs}:${ms}`;
+        focusTimerAnimationFrame = requestAnimationFrame(update);
+      }
+
+      update();
+    }
+
+    function exitFocusMode() {
+      cancelAnimationFrame(focusTimerAnimationFrame);
+      switchScreen("homeScreen");
+    }
+
+    function downloadLog() {
+      const blob = new Blob([log], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "focus_analytics_log.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearLog() {
+      if (confirm("Are you sure you want to erase all stored logs?")) {
+        log = "";
+        focusDurations = [];
+        clickCount = 0;
+        tabSwitchCount = 0;
+        renderCharts();
+        alert("Logs erased.");
+      }
+    }
+
+    function renderCharts() {
+      const focusCtx = document.getElementById("focusChart").getContext("2d");
+      const clickCtx = document.getElementById("clickChart").getContext("2d");
+      const tabCtx = document.getElementById("tabChart").getContext("2d");
+
+      if (focusChartInstance) focusChartInstance.destroy();
+      if (clickChartInstance) clickChartInstance.destroy();
+      if (tabChartInstance) tabChartInstance.destroy();
+
+      focusChartInstance = new Chart(focusCtx, {
+        type: "bar",
+        data: {
+          labels: focusDurations.map((_, i) => `Session ${i + 1}`),
+          datasets: [{
+            label: "Focus Time (seconds)",
+            data: focusDurations,
+            backgroundColor: "#4bc0c0"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              bodyFont: { size: 16 },
+              titleFont: { size: 18 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { font: { size: 16 } }
+            },
+            x: {
+              ticks: { font: { size: 16 } }
+            }
+          }
+        }
+      });
+
+      clickChartInstance = new Chart(clickCtx, {
+        type: "bar",
+        data: {
+          labels: ["Clicks"],
+          datasets: [{
+            label: "Click Count",
+            data: [clickCount],
+            backgroundColor: "#f7786b"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              bodyFont: { size: 16 },
+              titleFont: { size: 18 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { font: { size: 16 } }
+            },
+            x: {
+              ticks: { font: { size: 16 } }
+            }
+          }
+        }
+      });
+
+      tabChartInstance = new Chart(tabCtx, {
+        type: "bar",
+        data: {
+          labels: ["Tab Switches"],
+          datasets: [{
+            label: "Tab Switch Count",
+            data: [tabSwitchCount],
+            backgroundColor: "#f7d154"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              bodyFont: { size: 16 },
+              titleFont: { size: 18 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { font: { size: 16 } }
+            },
+            x: {
+              ticks: { font: { size: 16 } }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

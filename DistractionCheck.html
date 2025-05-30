@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Distraction Check - AI Camera Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+  <!-- Teachable Machine Image Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    header img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 10px;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 5px;
+      font-weight: 700;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.4);
+    }
+    header p {
+      font-size: 1.1rem;
+      font-weight: 300;
+      opacity: 0.85;
+    }
+    #webcam-container {
+      width: 400px;
+      max-width: 90vw;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      background: #222;
+    }
+    #webcam {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    #label-container {
+      background: rgba(0,0,0,0.5);
+      border-radius: 0 0 15px 15px;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+    }
+    #loadingMessage {
+      margin: 15px 0;
+      font-size: 1rem;
+      font-style: italic;
+      color: #eee;
+    }
+    #backButton {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: rgba(255 255 255 / 0.9);
+      border: none;
+      border-radius: 8px;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+    }
+    #backButton:hover {
+      background-color: rgba(255 255 255 / 1);
+    }
+  </style>
+</head>
+<body>
+  <button id="backButton" onclick="goBack()">← Back</button>
+
+  <header>
+    <h1>AI Powered Distraction Check</h1>
+    <p>AI Camera Detection</p>
+  </header>
+
+  <div id="webcam-container">
+    <video id="webcam" autoplay playsinline muted></video>
+    <div id="label-container">Loading model...</div>
+  </div>
+
+  <div id="loadingMessage"></div>
+
+  <script>
+    const URL = "./model/"; // path to your downloaded model folder
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    async function init() {
+      // Load the Teachable Machine model and metadata
+      model = await tmImage.load(URL + "model.json", URL + "metadata.json");
+      maxPredictions = model.getTotalClasses();
+
+      // Setup webcam
+      const flip = true; // flip webcam horizontally for mirror view
+      webcam = new tmImage.Webcam(400, 400, flip);
+      await webcam.setup(); // request access to the webcam
+      await webcam.play();
+      window.requestAnimationFrame(loop);
+
+      // Replace video element with the webcam canvas
+      document.getElementById("webcam").replaceWith(webcam.canvas);
+      labelContainer = document.getElementById("label-container");
+
+      document.getElementById("loadingMessage").textContent = "Model loaded. Analyzing...";
+    }
+
+    async function loop() {
+      webcam.update(); // update the webcam frame
+      await predict();
+      window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+      // Predict the current frame.
+      const prediction = await model.predict(webcam.canvas);
+
+      // Find highest probability prediction
+      let highestProb = 0;
+      let predictedClass = "";
+      for (let i = 0; i < maxPredictions; i++) {
+        if (prediction[i].probability > highestProb) {
+          highestProb = prediction[i].probability;
+          predictedClass = prediction[i].className;
+        }
+      }
+
+      labelContainer.innerHTML = `Status: <strong>${predictedClass}</strong><br>Confidence: ${(highestProb * 100).toFixed(1)}%`;
+    }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    init();
+  </script>
+</body>
+</html>
